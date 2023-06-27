@@ -34,6 +34,30 @@ app.post('/addPrescription',(req,res) =>{
     });
 });
 
+app.post('/inscriptionStudent',(req,res) => {
+    let data = {
+        id_patient: req.body.secu,
+        first_name: req.body.prenom,
+        last_name: req.body.nom,
+        email: req.body.mail,
+        login_password: req.body.mdp,
+        num_phone: req.body,
+        medecin: 1
+    }
+
+    let sql = "INSERT INTO patients VALUES ?";
+
+    db.query(sql,[data],(error,results) => {
+        if(error){
+            console.error(error);
+            res.status(500).send("Error inserting into patient database.");
+        }else {
+            console.log('Data insert successfully in patient database.');
+            res.send('Data insert successfully in patient database.');
+        }
+    });
+});
+
 app.get('/getDrugs', (req,res) => {
     let sql = 'SELECT * FROM drug';
     db.query(sql,(err,results) => {
