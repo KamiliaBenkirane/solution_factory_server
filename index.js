@@ -42,7 +42,7 @@ app.get('/getDrugs', (req,res) => {
     });
 });
 
-
+console.log("hello")
 app.listen(5001, () => {
     console.log('Server started on port 5001');
 });
