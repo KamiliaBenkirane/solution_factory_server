@@ -37,12 +37,43 @@ app.post('/addPrescription',(req,res) =>{
 app.get('/getDrugs', (req,res) => {
     let sql = 'SELECT * FROM drug';
     db.query(sql,(err,results) => {
-        if(err) throw err;
+        if(err){
+            console.log(err)
+        }
         res.json(results);
     });
 });
 
-console.log("hello")
+app.get('/getMedecin', (req,res) => {
+    let sql = 'SELECT * FROM medecin';
+    db.query(sql,(err,results) => {
+        if(err) {
+            console.log(err);
+        }
+        res.json(results);
+    });
+});
+
+app.post('/getPatient', (req, res)=>{
+    numSecu = req.body.numSecu
+    let sqlQuery = "SELECT * from patients where id_patient = ?"
+    db.query(sqlQuery, [numSecu], (err, results)=>{
+        if(err){
+            console.log(err)
+            res.json({message : "Une erreur s'est produite"})
+        }
+        else {
+            if (results === null || results.length === 0) {
+                res.status(400).json({ message: "Ce numéro de sécurité sociale n'existe pas !" });
+            } else {
+                res.json(results);
+            }
+        }
+    });
+});
+
+
+
 app.listen(5001, () => {
     console.log('Server started on port 5001');
 });
