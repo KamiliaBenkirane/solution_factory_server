@@ -16,7 +16,7 @@ const db = mysql.createConnection({
 
 db.connect(err => {
     if(err) throw err;
-    console.log('MySQL Connected...')
+    console.log('MySQL Connected!')
 });
 
 app.post('/addPrescription',(req,res) =>{
@@ -41,13 +41,13 @@ app.post('/inscriptionStudent',(req,res) => {
         last_name: req.body.nom,
         email: req.body.mail,
         login_password: req.body.mdp,
-        num_phone: req.body,
-        medecin: 1
+        num_phone: req.body.numero,
+        medecin: req.body.selectedMedecin
     }
 
-    let sql = "INSERT INTO patients VALUES ?";
+    let sql = `INSERT INTO patients (id_patient, first_name, last_name, email, login_password, num_phone, id_medecin_treat) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-    db.query(sql,[data],(error,results) => {
+    db.query(sql,[data.id_patient, data.first_name, data.last_name, data.email, data.login_password, data.num_phone, data.medecin],(error,results) => {
         if(error){
             console.error(error);
             res.status(500).send("Error inserting into patient database.");
@@ -68,8 +68,8 @@ app.get('/getDrugs', (req,res) => {
     });
 });
 
-app.get('/getMedecin', (req,res) => {
-    let sql = 'SELECT * FROM medecin';
+app.get('/getMedecinIdName', (req,res) => {
+    let sql = 'SELECT id_medecin,first_name,last_name FROM medecin';
     db.query(sql,(err,results) => {
         if(err) {
             console.log(err);
