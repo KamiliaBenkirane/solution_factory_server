@@ -176,6 +176,23 @@ app.post("/getOrdonnances", (req, res)=>{
     })
 })
 
+app.post("/getEtudiantsSuivi", (req, res)=>{
+    const id_medecin = req.body.id_medecin
+    sqlGetEtudiants = "SELECT id_patient, first_name, last_name, email, num_phone, id_medecin_treat FROM medic.patients where id_medecin_treat=?;"
+    db.query(sqlGetEtudiants, [id_medecin], (err, result)=>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            if (result === null || result.length === 0){
+                return res.json([])
+            }
+            else{
+                return res.json(result)
+            }
+        }
+    })
+})
 
 
 app.listen(5001, () => {
