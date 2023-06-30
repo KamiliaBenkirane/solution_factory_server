@@ -58,6 +58,44 @@ app.post('/inscriptionStudent',(req,res) => {
     });
 });
 
+app.post('/inscriptionPharmacie',(req,res) => {
+    let data_pharma={
+        name_pharma: req.body.nom,
+        email:  req.body.email,
+        login_password: req.body.mdp,
+        num_phone:  req.body.numero
+    }
+    let data_adress={
+        nb_street:  req.body.nb_adresse,
+        street_name: req.body.adresse   ,
+        post_code:  req.body.code_postale,
+        city: req.body.city
+    }
+
+    let sql_adress = "INSERT INTO adress (street_name, post_code, city, nb_street) VALUES (?, ?, ?, ?)";
+    
+    db.query(sql_adress, [data_adress.street_name, data_adress.post_code, data_adress.city, data_adress.nb_street], (err, results) => {
+        if(err) {
+            console.log(err);
+            res.status(500).send('Error inserting into adress database.');
+            return;
+        }
+
+        let sql_pharama = "INSERT INTO pharmacie (name_pharma, email, login_password, num_phone, id_adress) VALUES (?, ?, ?, ?, LAST_INSERT_ID())";
+
+        db.query(sql_pharama, [data_pharma.name_pharma, data_pharma.email, data_pharma.login_password, data_pharma.num_phone], (err, results) => {
+            if(err) {
+                console.log(err);
+                res.status(500).send('Error inserting into pharmacie database.');
+                return;
+            }
+            
+            console.log('Data inserted successfully into pharmacie and adress databases.');
+            res.send('Data inserted successfully into pharmacie and adress databases.');
+        });
+    });
+});
+
 app.get('/getDrugs', (req,res) => {
     let sql = 'SELECT * FROM drug';
     db.query(sql,(err,results) => {
