@@ -173,6 +173,64 @@ app.post('/login', (req, res)=>{
 
 })
 
+app.post("/addOrdonnance", (req, res)=>{
+    const {date, id_medecin, id_patient, infoMedicaments} = req.body;
+    sqlQueryOrdo = "INSERT INTO ordonnance (date, id_medecin, id_patient) VALUES(CURDATE(), ?, ?);"
+    db.query(sqlQueryOrdo, [id_medecin, id_patient], (error, result)=>{
+        if(error){
+            console.log(error)
+        }
+        else{
+            for(let i=0; i<infoMedicaments.length;i++){
+                sqlQueryOrdoMedicaments = "INSERT INTO ordonnance_drugs (id_drug, nb_fois_par_jour, nb_jour, id_ordo) VALUES(?,?,?,(SELECT id_ordo from ordonnance ORDER BY id_ordo desc  Limit 1));"
+                db.query(sqlQueryOrdoMedicaments, [infoMedicaments[i][0], infoMedicaments[i][1], infoMedicaments[i][2]], (err, result)=>{
+                    if(err){
+                        console.log(err)
+                    }
+                })
+            }
+            return res.json({message : "ORDONNANCE AJOUTEE AVEC SUCCES !"})
+        }
+
+    })
+
+})
+
+app.post("/getOrdonnances", (req, res)=>{
+    const id_medecin = req.body.id_medecin
+    sqlGetOrdo = "SELECT o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour from ordonnance o join  medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where o.id_medecin = ?;"
+    db.query(sqlGetOrdo, [id_medecin], (err, result)=>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            if (result === null || result.length === 0){
+                return res.json([])
+            }
+            else{
+                return res.json(result)
+            }
+        }
+    })
+})
+
+app.post("/getEtudiantsSuivi", (req, res)=>{
+    const id_medecin = req.body.id_medecin
+    sqlGetEtudiants = "SELECT id_patient, first_name, last_name, email, num_phone, id_medecin_treat FROM medic.patients where id_medecin_treat=?;"
+    db.query(sqlGetEtudiants, [id_medecin], (err, result)=>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            if (result === null || result.length === 0){
+                return res.json([])
+            }
+            else{
+                return res.json(result)
+            }
+        }
+    })
+})
 
 
 app.listen(5001, () => {
