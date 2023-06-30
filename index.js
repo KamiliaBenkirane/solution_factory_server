@@ -154,24 +154,44 @@ app.post('/createMedecin', (req, res)=>{
     })
 })
 
-app.post('/login', (req, res)=>{
+
+app.post("/login", (req, res) => {
     const { mail, mdp} = req.body;
 
     const loginQueryMedecin = "SELECT * from medecin join adress on medecin.id_adress = adress.id_adress  where email = ? and login_password = ?"
-    const values = [mail, mdp]
-    db.query(loginQueryMedecin, [mail, mdp], (err, results)=>{
-        if(err){
-            console.log(err)
-        }
-        else if (results === null || results.length === 0){
-            return res.status(400).json({error : 'No account found'})
-        }
-        const message = 'login successfull';
-        const response = { message, results };
-        return res.status(200).json(response)
-    })
 
-})
+   db.query(loginQueryMedecin, [mail, mdp], (err, results)=>{
+        if (results.length !== 0){
+            const message = 'login_medecin';
+            const response = { message, results };
+            return res.status(200).json(response)
+        }
+        else{
+            const loginQueryUser = "SELECT id_patient, p.first_name, p.last_name, p.email, p.num_phone, id_medecin_treat, m.first_name as first_name_medecin, m.last_name as last_name_medecin, m.email as email_medecin, m.num_phone as num_phone_medecin from patients p join medecin m on id_medecin_treat=id_medecin where p.email=? and p.login_password=?"
+
+            db.query(loginQueryUser, [mail, mdp], (err, result)=> {
+                if (result.length !== 0){
+                    const message = 'login_user';
+                    const response = { message, result };
+                    return res.status(200).json(response)
+                }
+                else{
+                    const loginQueryPharma = "SELECT * FROM medic.pharmacie where email = ? and login_password = ?;"
+                    db.query(loginQueryPharma, [mail, mdp], (err, results)=>{
+                        if (results === null || results.length === 0){
+                            return res.status(400).json({error : 'Pas de compte'})
+                        }
+                        const message = 'login_pharma';
+                        const response = { message, results };
+                        return res.status(200).json(response)
+                    })
+
+
+                }
+            });
+        }
+    });
+});
 
 app.post("/addOrdonnance", (req, res)=>{
     const {date, id_medecin, id_patient, infoMedicaments} = req.body;
