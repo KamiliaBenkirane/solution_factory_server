@@ -2,8 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cors = require('cors');
-const req = require('express/lib/request');
-const res = require('express/lib/response');
 
 const app = express();
 app.use(cors());
@@ -328,3 +326,46 @@ app.post("/completeOrdonnance", (req,res) => {
 app.listen(5001, () => {
     console.log('Server started on port 5001');
 });
+
+app.get('/sendemails', async (req, res, next) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'ordotech6@gmail.com',
+      pass: 'hawgcjqeyiziepst'
+    }
+  });
+
+  const mailOptions = {
+    from: 'ordotech6@gmail.com',
+    to: 'amineelfe@gmail.com',
+    subject: 'Test',
+    text: 'Justificatif'
+  };
+
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      return res.json({ status: 'fail', message: err.toString() });
+    }
+    return res.json({ status: 'success', message: 'Email sent successfully' });
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
