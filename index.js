@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cors = require('cors');
+const req = require('express/lib/request');
+const res = require('express/lib/response');
 
 const app = express();
 app.use(cors());
@@ -251,6 +253,52 @@ app.post("/getEtudiantsSuivi", (req, res)=>{
         }
     })
 })
+
+app.post("/sendOrdonnanceToPharma", (req,res) => {
+    const id_pharma = req.body.id_pharma;
+    const id_ordo = req.body.id_ordo;
+    sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
+    db.query(sql_ordoSending, [id_pharma,id_ordo], (err, result)=>{
+        if(err) {
+            console.log(err);
+            res.status(500).send('Error inserting into ordonnance_pharma database.');
+            return;
+        }
+        
+        console.log('Data inserted into ordonnance_pharma succeed.');
+        res.send('Data inserted into ordonnance_pharma succeed.');
+    });
+});
+
+
+app.get("/getOrdonnancePharma", (req,res) => {
+    const id_pharma = req.body.id_pharma;
+    sql_getOrdo = "SELECT * FROM ordonnance_pharma WHERE id_pharma = ?"
+    db.query(sql_getOrdo, [id_pharma], (error, results) => {
+        if (error) {
+            console.log(error);
+            res.status(500).send("Error getting data from database.");
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.post("/completeOrdonnance", (req,res) => {
+    const id_ordo_pharma = req.body.id_ordo_pharma
+    sql_completeOrdo = "UPDATE ordonnance_pharma SET isComplete = 1 WHERE id_ordo_pharma = ? ;"
+    db.query(sql_completeOrdo, [id_ordo_pharma], (error, results) => {
+        if (error) {
+            console.log(error);
+            res.status(500).send("Error completing the ordonnance.");
+        } else {
+            res.send("Ordonnace complete")
+        }
+    });
+})
+
+
+
 
 
 app.listen(5001, () => {
