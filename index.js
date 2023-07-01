@@ -275,7 +275,7 @@ app.post("/getEtudiantsSuivi", (req, res)=>{
         }
     })
 })
-
+//Patient side
 app.post("/sendOrdonnanceToPharma", (req,res) => {
     const id_pharma = req.body.id_pharma;
     const id_ordo = req.body.id_ordo;
@@ -292,7 +292,7 @@ app.post("/sendOrdonnanceToPharma", (req,res) => {
     });
 });
 
-
+//Pharma side
 app.get("/getOrdonnancePharma", (req,res) => {
     const id_pharma = req.body.id_pharma;
     sql_getOrdo = "SELECT * FROM ordonnance_pharma WHERE id_pharma = ?"
@@ -306,6 +306,7 @@ app.get("/getOrdonnancePharma", (req,res) => {
     });
 });
 
+//Pharma side
 app.post("/completeOrdonnance", (req,res) => {
     const id_ordo_pharma = req.body.id_ordo_pharma
     sql_completeOrdo = "UPDATE ordonnance_pharma SET isComplete = 1 WHERE id_ordo_pharma = ? ;"
