@@ -6,6 +6,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const db = mysql.createConnection({
     host: 'medical.mysql.database.azure.com',
@@ -319,15 +320,11 @@ app.post("/completeOrdonnance", (req,res) => {
     });
 })
 
-
-
-
-
 app.listen(5001, () => {
     console.log('Server started on port 5001');
 });
 
-app.get('/sendemails', async (req, res, next) => {
+app.post('/sendemails', async (req, res, next) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -336,11 +333,13 @@ app.get('/sendemails', async (req, res, next) => {
     }
   });
 
+  const { to, subject, text } = req.body; // Récupérer les données du body de la requête
+
   const mailOptions = {
     from: 'ordotech6@gmail.com',
-    to: 'amineelfe@gmail.com',
-    subject: 'Test',
-    text: 'Justificatif'
+    to: to, // utiliser l'adresse email provenant du front-end
+    subject: subject, // utiliser le sujet provenant du front-end
+    text: text // utiliser le texte provenant du front-end
   };
 
   transporter.sendMail(mailOptions, (err, data) => {
@@ -350,6 +349,7 @@ app.get('/sendemails', async (req, res, next) => {
     return res.json({ status: 'success', message: 'Email sent successfully' });
   });
 });
+
 
 
 
