@@ -169,7 +169,30 @@ app.post("/login", (req, res) => {
             return res.status(200).json(response)
         }
         else{
-            const loginQueryUser = "SELECT id_patient, p.first_name, p.last_name, p.email, p.num_phone, id_medecin_treat, m.first_name as first_name_medecin, m.last_name as last_name_medecin, m.email as email_medecin, m.num_phone as num_phone_medecin from patients p join medecin m on id_medecin_treat=id_medecin where p.email=? and p.login_password=?"
+            const LoginQueryMedecinT = "S"
+
+
+
+            const loginQueryUser = `SELECT id_patient, p.first_name, p.last_name, p.email, p.num_phone,id_medecin_treat,
+    CASE
+        WHEN id_medecin_treat IS NOT NULL THEN m.first_name
+        ELSE NULL
+    END AS first_name_medecin,
+    CASE
+        WHEN id_medecin_treat IS NOT NULL THEN m.last_name
+        ELSE NULL
+    END AS last_name_medecin,
+    CASE
+        WHEN id_medecin_treat IS NOT NULL THEN m.email
+        ELSE NULL
+    END AS email_medecin,
+    CASE
+        WHEN id_medecin_treat IS NOT NULL THEN m.num_phone
+        ELSE NULL
+    END AS num_phone_medecin
+FROM patients p
+LEFT JOIN medecin m ON id_medecin_treat = id_medecin
+WHERE p.email = ? AND p.login_password = ?`
 
             db.query(loginQueryUser, [mail, mdp], (err, result)=> {
                 if (result.length !== 0){
