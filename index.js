@@ -279,8 +279,8 @@ app.post("/getEtudiantsSuivi", (req, res) => {
 })
 //Patient side
 app.post("/sendOrdonnanceToPharma", (req, res) => {
-    const id_pharma = req.body.id_pharma;
-    const id_ordo = req.body.id_ordo;
+    const id_pharma = req.query.id_pharma;
+    const id_ordo = req.query.id_ordo;
     sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
         if (err) {
