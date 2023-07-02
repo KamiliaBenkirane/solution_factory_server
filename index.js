@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cors = require('cors');
+const { error, log } = require('console');
 
 const app = express();
 app.use(cors());
@@ -293,17 +294,30 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     });
 });
 
-app.get("/getPharmacies", (req, res) => {
-    // Query to get all pharmacies
-    const pharmacies = db.query("SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie");
-    res.json(pharmacies);
+app.get('/getPharmacies', (req, res) => {
+    let sql_getPharma = "SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie";
+    db.query(sql_getPharma, (err,result) => {
+        if (err){
+            console.log(err);
+            console.log("Error in getPharmacies");
+            res.status(500).send("Error in getPharmacies")
+        }else{
+            res.json(result);
+        }
+    });
 });
 
-// app.get('/getAddress/:id', async (req, res) => {
-//     // Query to get address based on id
-//     const address = await db.query("SELECT * FROM adress WHERE id_adress = ?", [req.params.id]);
-//     res.json(address[0]); // assuming address query returns an array
-// });
+app.get('/getAddress', (req, res) => {
+    sql_getPharma = "SELECT * FROM adress WHERE id_adress = ?";
+    db.query(sql_getPharma, [req.query.id_adress], (err,result) => {
+        if (err){
+            console.log(err);
+            res.status(500).send("Error in getAdress")
+        }else{
+            res.json(result);
+        }
+    });
+});
 
 
 //Pharma side
