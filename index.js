@@ -293,17 +293,17 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     });
 });
 
-app.get("/getPharmacies", async (req, res) => {
-    // Query to get all pharmacies
-    const pharmacies = await db.query("SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie");
-    res.json(pharmacies);
-});
+// app.get("/getPharmacies", async (req, res) => {
+//     // Query to get all pharmacies
+//     const pharmacies = await db.query("SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie");
+//     res.json(pharmacies);
+// });
 
-app.get('/getAddress/:id', async (req, res) => {
-    // Query to get address based on id
-    const address = await db.query("SELECT * FROM adress WHERE id_adress = ?", [req.params.id]);
-    res.json(address[0]); // assuming address query returns an array
-});
+// app.get('/getAddress/:id', async (req, res) => {
+//     // Query to get address based on id
+//     const address = await db.query("SELECT * FROM adress WHERE id_adress = ?", [req.params.id]);
+//     res.json(address[0]); // assuming address query returns an array
+// });
 
 
 //Pharma side
