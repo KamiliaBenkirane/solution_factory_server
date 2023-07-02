@@ -5,10 +5,10 @@ const cors = require('cors');
 const { error, log } = require('console');
 
 const app = express();
+const nodemailer = require('nodemailer');
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 const db = mysql.createConnection({
     host: 'medical.mysql.database.azure.com',
     user: 'adminproject',
@@ -353,22 +353,22 @@ app.listen(5001, () => {
 });
 
 app.post('/sendemails', async (req, res, next) => {
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'ordotech6@gmail.com',
-            pass: 'hawgcjqeyiziepst'
-        }
-    });
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'ordotech6@gmail.com',
+      pass: 'hawgcjqeyiziepst'
+    }
+  });
 
-    const { to, subject, text } = req.body; // Récupérer les données du body de la requête
+  const { to, subject, text } = req.body; // Récupérer les données du body de la requête
 
-    const mailOptions = {
-        from: 'ordotech6@gmail.com',
-        to: to, // utiliser l'adresse email provenant du front-end
-        subject: subject, // utiliser le sujet provenant du front-end
-        text: text // utiliser le texte provenant du front-end
-    };
+  const mailOptions = {
+    from: 'ordotech6@gmail.com',
+    to: to, // utiliser l'adresse email provenant du front-end
+    subject: subject, // utiliser le sujet provenant du front-end
+    text: text // utiliser le texte provenant du front-end
+  };
 
     transporter.sendMail(mailOptions, (err, data) => {
         if (err) {
