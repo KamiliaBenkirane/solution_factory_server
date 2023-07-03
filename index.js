@@ -260,6 +260,24 @@ app.post("/getOrdonnances", (req, res) => {
     })
 })
 
+app.post("/getOrdonnancesPharma", (req, res) => {
+    const id_pharma = req.body.id_pharma
+    sqlGetOrdo = "SELECT ph.id_pharma, ph.id_ordo, isComplete, o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour, a.street_name, a.city, a.post_code, a.nb_street from ordonnance_pharma ph join ordonnance o on ph.id_ordo=o.id_ordo join medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where ph.id_pharma= ?;"
+    db.query(sqlGetOrdo, [id_pharma], (err, result) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            if (result === null || result.length === 0) {
+                return res.json([])
+            }
+            else {
+                return res.json(result)
+            }
+        }
+    })
+})
+
 app.post("/getEtudiantsSuivi", (req, res) => {
     const id_medecin = req.body.id_medecin
     sqlGetEtudiants = "SELECT id_patient, first_name, last_name, email, num_phone, id_medecin_treat FROM medic.patients where id_medecin_treat=?;"
