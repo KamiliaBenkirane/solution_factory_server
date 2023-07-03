@@ -304,10 +304,10 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     const id_ordo = req.body.id_ordo;
     sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
-        if (err.errno === 45000) {
+        if (err && err.errno === 45000) {
             res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
         }
-        else if (err) {
+        else if (err.errno !== 45000) {
             console.log(err);
             res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
             return ;
