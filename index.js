@@ -304,15 +304,17 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     const id_ordo = req.body.id_ordo;
     sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
-
-        if (err) {
+        if (err.errno === 45000) {
+            res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
+        }
+        else if (err) {
             console.log(err);
             res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
             return ;
+        }else{
+            console.log('Data inserted into ordonnance_pharma succeed.');
+            res.send('Data inserted into ordonnance_pharma succeed.');
         }
-
-        console.log('Data inserted into ordonnance_pharma succeed.');
-        res.send('Data inserted into ordonnance_pharma succeed.');
     });
 });
 
