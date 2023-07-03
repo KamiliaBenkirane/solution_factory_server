@@ -50,9 +50,15 @@ app.post('/inscriptionStudent', (req, res) => {
     let sql = `INSERT INTO patients (id_patient, first_name, last_name, email, login_password, num_phone, id_medecin_treat) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     db.query(sql, [data.id_patient, data.first_name, data.last_name, data.email, data.login_password, data.num_phone, data.medecin], (error, results) => {
-        if (error) {
-            console.error(error);
-            res.status(500).send("Error inserting into patient database.");
+        if (err) {
+            if (err.sqlState === '45000') {
+                res.status(500).send('Duplicated inserting into database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into database.');
+                return;
+            }
         } else {
             console.log('Data insert successfully in patient database.');
             res.send('Data insert successfully in patient database.');
@@ -87,9 +93,14 @@ app.post('/inscriptionPharmacie', (req, res) => {
 
         db.query(sql_pharama, [data_pharma.name_pharma, data_pharma.email, data_pharma.login_password, data_pharma.num_phone], (err, results) => {
             if (err) {
-                console.log(err);
-                res.status(500).send('Error inserting into pharmacie database.');
-                return;
+                if (err.sqlState === '45000') {
+                    res.status(500).send('Duplicated inserting into database.');
+                }
+                else if (err.sqlState !== '45000') {
+                    console.log(err);
+                    res.status(500).send('Error inserting into database.');
+                    return;
+                }
             }
 
             console.log('Data inserted successfully into pharmacie and adress databases.');
@@ -142,7 +153,14 @@ app.post('/createMedecin', (req, res) => {
     valuesMedecin = [nom, prenom, mail, num, mdp]
     db.query(sqlQueryAdress, [num_rue, rue, code_postal, ville], (err, result) => {
         if (err) {
-            console.log(err)
+            if (err.sqlState === '45000') {
+                res.status(500).send('Duplicated inserting into database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into database.');
+                return;
+            }
         }
         else {
             sqlQueryMedecin = 'INSERT INTO medecin(first_name, last_name, email, login_password, num_phone, signature, id_adress) VALUES (?, ?, ?, ?, ?, "https://varices.ca/wp-content/uploads/2017/11/signature-dr-duclos.png", (SELECT id_adress from adress where nb_street=? and street_name=? and post_code = ?));'
