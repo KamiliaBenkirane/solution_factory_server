@@ -262,7 +262,7 @@ app.post("/getOrdonnances", (req, res) => {
 
 app.post("/getOrdonnancesPharma", (req, res) => {
     const id_pharma = req.body.id_pharma
-    sqlGetOrdo = "SELECT ph.id_pharma, ph.id_ordo, isComplete, o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour, a.street_name, a.city, a.post_code, a.nb_street from ordonnance_pharma ph join ordonnance o on ph.id_ordo=o.id_ordo join medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where ph.id_pharma= ?;"
+    sqlGetOrdo = "SELECT ph.id_ordo_pharma, ph.id_pharma, ph.id_ordo, isComplete, o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour, a.street_name, a.city, a.post_code, a.nb_street from ordonnance_pharma ph join ordonnance o on ph.id_ordo=o.id_ordo join medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where ph.id_pharma= ?;"
     db.query(sqlGetOrdo, [id_pharma], (err, result) => {
         if (err) {
             console.log(err)
@@ -304,6 +304,7 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     const id_ordo = req.body.id_ordo;
     sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
+
         if (err) {
             console.log(err);
             res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
