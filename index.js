@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cors = require('cors');
-const { error, log } = require('console');
+const { error, log, Console } = require('console');
 
 const app = express();
 const nodemailer = require('nodemailer');
@@ -304,14 +304,18 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     const id_ordo = req.body.id_ordo;
     sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
-        if (err && err.errno === 45000) {
-            res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
+        if (err) {
+            if (err.sqlState === '45000') {
+                console.log("It's triggered!")
+                res.status(500).send('Duplicated inserting into ordonnance_pharma database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into ordonnance_pharma database.');
+                return;
+            }
         }
-        else if (err.errno !== 45000) {
-            console.log(err);
-            res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
-            return ;
-        }else{
+        else {
             console.log('Data inserted into ordonnance_pharma succeed.');
             res.send('Data inserted into ordonnance_pharma succeed.');
         }
@@ -320,12 +324,12 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
 
 app.get('/getPharmacies', (req, res) => {
     let sql_getPharma = "SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie";
-    db.query(sql_getPharma, (err,result) => {
-        if (err){
+    db.query(sql_getPharma, (err, result) => {
+        if (err) {
             console.log(err);
             console.log("Error in getPharmacies");
             res.status(500).send("Error in getPharmacies")
-        }else{
+        } else {
             res.json(result);
         }
     });
@@ -333,17 +337,17 @@ app.get('/getPharmacies', (req, res) => {
 
 app.get('/getAddress', (req, res) => {
     sql_getPharma = "SELECT * FROM adress WHERE id_adress = ?";
-    db.query(sql_getPharma, [req.query.id_adress], (err,result) => {
-        if (err){
+    db.query(sql_getPharma, [req.query.id_adress], (err, result) => {
+        if (err) {
             console.log(err);
             res.status(500).send("Error in getAdress")
-        }else{
+        } else {
             res.json(result);
         }
     });
 });
 
-app.post('/choseMedecinT', (req, res)=>{
+app.post('/choseMedecinT', (req, res) => {
 
 })
 
@@ -384,22 +388,22 @@ app.listen(5001, () => {
 });
 
 app.post('/sendemails', async (req, res, next) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'ordotech6@gmail.com',
-      pass: 'hawgcjqeyiziepst'
-    }
-  });
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'ordotech6@gmail.com',
+            pass: 'hawgcjqeyiziepst'
+        }
+    });
 
-  const { to, subject, text } = req.body; // Récupérer les données du body de la requête
+    const { to, subject, text } = req.body; // Récupérer les données du body de la requête
 
-  const mailOptions = {
-    from: 'ordotech6@gmail.com',
-    to: to, // utiliser l'adresse email provenant du front-end
-    subject: subject, // utiliser le sujet provenant du front-end
-    text: text // utiliser le texte provenant du front-end
-  };
+    const mailOptions = {
+        from: 'ordotech6@gmail.com',
+        to: to, // utiliser l'adresse email provenant du front-end
+        subject: subject, // utiliser le sujet provenant du front-end
+        text: text // utiliser le texte provenant du front-end
+    };
 
     transporter.sendMail(mailOptions, (err, data) => {
         if (err) {
