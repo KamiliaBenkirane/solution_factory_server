@@ -352,7 +352,7 @@ app.get("/getOrdonnancePharma", (req, res) => {
     db.query(sql_getOrdo, [id_pharma], (error, results) => {
         if (error) {
             console.log(error);
-            res.status(500).send("Error getting data from database.");
+            res.status(500).send("Error getting data from ordonnance_pharma database.");
         } else {
             res.json(results);
         }
@@ -371,7 +371,8 @@ app.post("/completeOrdonnance", (req, res) => {
             res.send("Ordonnace complete")
         }
     });
-})
+});
+
 
 app.listen(5001, () => {
     console.log('Server started on port 5001');
