@@ -306,8 +306,8 @@ app.post("/sendOrdonnanceToPharma", (req, res) => {
     db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send('Error inserting into ordonnance_pharma database.');
-            return;
+            res.status(500).send('Error inserting into ordonnance_pharma database.').json({message: false});
+            return ;
         }
 
         console.log('Data inserted into ordonnance_pharma succeed.');
@@ -346,7 +346,7 @@ app.post('/choseMedecinT', (req, res)=>{
 
 
 //Pharma side
-app.get("/getOrdonnancePharma", (req, res) => {
+app.post("/getOrdonnancePharma", (req, res) => {
     const id_pharma = req.body.id;
     const role = req.body.role;
     sql_getOrdo = "SELECT * FROM ordonnance_pharma WHERE id_pharma = ?"
@@ -359,6 +359,7 @@ app.get("/getOrdonnancePharma", (req, res) => {
         }
     });
 });
+
 
 //Pharma side
 app.post("/completeOrdonnance", (req, res) => {
