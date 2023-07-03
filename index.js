@@ -348,7 +348,8 @@ app.post('/choseMedecinT', (req, res)=>{
 
 //Pharma side
 app.get("/getOrdonnancePharma", (req, res) => {
-    const id_pharma = req.body.id_pharma;
+    const id_pharma = req.body.id;
+    const role = req.body.role;
     sql_getOrdo = "SELECT * FROM ordonnance_pharma WHERE id_pharma = ?"
     db.query(sql_getOrdo, [id_pharma], (error, results) => {
         if (error) {
