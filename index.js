@@ -4,6 +4,8 @@ const mysql = require('mysql');
 const cors = require('cors');
 const { error, log, Console } = require('console');
 
+
+//Liaison à la base de données
 const app = express();
 const nodemailer = require('nodemailer');
 app.use(cors());
@@ -21,159 +23,10 @@ db.connect(err => {
     console.log('MySQL Connected!')
 });
 
-app.post('/addPrescription', (req, res) => {
-    let data = {
-        pName: req.body.numSecu,
-        dosage: req.body.nbFoisParJour,
-        medical: 'Dolipane'
-    }
 
-    let sql = "INSERT INTO test_table (pName,medical,dosage) VALUES (?,?,?)";
-    db.query(sql, [data.pName, data.dosage, data.medical], (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send('Prescription added...');
-    });
-});
+///////////////////////////////////////// REQUETES ////////////////////////////////////////////////
 
-app.post('/inscriptionStudent', (req, res) => {
-    let data = {
-        id_patient: req.body.secu,
-        first_name: req.body.prenom,
-        last_name: req.body.nom,
-        email: req.body.mail,
-        login_password: req.body.mdp,
-        num_phone: req.body.numero,
-        medecin: req.body.selectedMedecin
-    }
-
-    let sql = `INSERT INTO patients (id_patient, first_name, last_name, email, login_password, num_phone, id_medecin_treat) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-    db.query(sql, [data.id_patient, data.first_name, data.last_name, data.email, data.login_password, data.num_phone, data.medecin], (error, results) => {
-        if (err) {
-            if (err.sqlState === '45000') {
-                res.status(500).send('Duplicated inserting into database.');
-            }
-            else if (err.sqlState !== '45000') {
-                console.log(err);
-                res.status(500).send('Error inserting into database.');
-                return;
-            }
-        } else {
-            console.log('Data insert successfully in patient database.');
-            res.send('Data insert successfully in patient database.');
-        }
-    });
-});
-
-app.post('/inscriptionPharmacie', (req, res) => {
-    let data_pharma = {
-        name_pharma: req.body.nom,
-        email: req.body.email,
-        login_password: req.body.mdp,
-        num_phone: req.body.numero
-    }
-    let data_adress = {
-        nb_street: req.body.nb_adresse,
-        street_name: req.body.adresse,
-        post_code: req.body.code_postale,
-        city: req.body.city
-    }
-
-    let sql_adress = "INSERT INTO adress (street_name, post_code, city, nb_street) VALUES (?, ?, ?, ?)";
-
-    db.query(sql_adress, [data_adress.street_name, data_adress.post_code, data_adress.city, data_adress.nb_street], (err, results) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send('Error inserting into adress database.');
-            return;
-        }
-
-        let sql_pharama = "INSERT INTO pharmacie (name_pharma, email, login_password, num_phone, id_adress) VALUES (?, ?, ?, ?, LAST_INSERT_ID())";
-
-        db.query(sql_pharama, [data_pharma.name_pharma, data_pharma.email, data_pharma.login_password, data_pharma.num_phone], (err, results) => {
-            if (err) {
-                if (err.sqlState === '45000') {
-                    res.status(500).send('Duplicated inserting into database.');
-                }
-                else if (err.sqlState !== '45000') {
-                    console.log(err);
-                    res.status(500).send('Error inserting into database.');
-                    return;
-                }
-            }
-
-            console.log('Data inserted successfully into pharmacie and adress databases.');
-            res.send('Data inserted successfully into pharmacie and adress databases.');
-        });
-    });
-});
-
-app.get('/getDrugs', (req, res) => {
-    let sql = 'SELECT * FROM drug';
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.log(err)
-        }
-        res.json(results);
-    });
-});
-
-app.get('/getMedecinIdName', (req, res) => {
-    let sql = 'SELECT id_medecin,first_name,last_name FROM medecin';
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.log(err);
-        }
-        res.json(results);
-    });
-});
-
-app.post('/getPatient', (req, res) => {
-    numSecu = req.body.numSecu
-    let sqlQuery = "SELECT * from patients where id_patient = ?"
-    db.query(sqlQuery, [numSecu], (err, results) => {
-        if (err) {
-            console.log(err)
-            res.json({ message: "Une erreur s'est produite" })
-        }
-        else {
-            if (results === null || results.length === 0) {
-                res.status(400).json({ message: "Ce numéro de sécurité sociale n'existe pas !" });
-            } else {
-                res.json(results);
-            }
-        }
-    });
-});
-
-app.post('/createMedecin', (req, res) => {
-    const { prenom, nom, mail, num, num_rue, rue, code_postal, ville, mdp } = req.body
-    sqlQueryAdress = "INSERT INTO adress(nb_street, street_name, post_code, city) VALUES (?, ?, ?, ?)"
-    valuesMedecin = [nom, prenom, mail, num, mdp]
-    db.query(sqlQueryAdress, [num_rue, rue, code_postal, ville], (err, result) => {
-        if (err) {
-            if (err.sqlState === '45000') {
-                res.status(500).send('Duplicated inserting into database.');
-            }
-            else if (err.sqlState !== '45000') {
-                console.log(err);
-                res.status(500).send('Error inserting into database.');
-                return;
-            }
-        }
-        else {
-            sqlQueryMedecin = 'INSERT INTO medecin(first_name, last_name, email, login_password, num_phone, signature, id_adress) VALUES (?, ?, ?, ?, ?, "https://varices.ca/wp-content/uploads/2017/11/signature-dr-duclos.png", (SELECT id_adress from adress where nb_street=? and street_name=? and post_code = ?));'
-            db.query(sqlQueryMedecin, [prenom, nom, mail, mdp, num, num_rue, rue, code_postal], (err, result) => {
-                if (err) {
-                    console.log(err)
-                }
-                res.json({ message: "Medecin ajouté à la base de données avec succès !" })
-            })
-        }
-    })
-})
-
+/*  -------------LOGIN---------------  */
 
 app.post("/login", (req, res) => {
     const { mail, mdp } = req.body;
@@ -236,6 +89,170 @@ WHERE p.email = ? AND p.login_password = ?`
     });
 });
 
+
+/*  -------------REGISTER---------------  */
+
+//Inscriptoin de l'étudiant
+app.post('/inscriptionStudent', (req, res) => {
+    let data = {
+        id_patient: req.body.secu,
+        first_name: req.body.prenom,
+        last_name: req.body.nom,
+        email: req.body.mail,
+        login_password: req.body.mdp,
+        num_phone: req.body.numero,
+        medecin: req.body.selectedMedecin
+    }
+
+    let sql = `INSERT INTO patients (id_patient, first_name, last_name, email, login_password, num_phone, id_medecin_treat) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [data.id_patient, data.first_name, data.last_name, data.email, data.login_password, data.num_phone, data.medecin], (error, results) => {
+        if (err) {
+            if (err.sqlState === '45000') {
+                res.status(500).send('Duplicated inserting into database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into database.');
+                return;
+            }
+        } else {
+
+            res.send('Data insert successfully in patient database.');
+        }
+    });
+});
+
+//Inscription du médecin
+app.post('/createMedecin', (req, res) => {
+    const { prenom, nom, mail, num, num_rue, rue, code_postal, ville, mdp } = req.body
+    sqlQueryAdress = "INSERT INTO adress(nb_street, street_name, post_code, city) VALUES (?, ?, ?, ?)"
+    valuesMedecin = [nom, prenom, mail, num, mdp]
+    db.query(sqlQueryAdress, [num_rue, rue, code_postal, ville], (err, result) => {
+        if (err) {
+            if (err.sqlState === '45000') {
+                res.status(500).send('Duplicated inserting into database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into database.');
+                return;
+            }
+        }
+        else {
+            sqlQueryMedecin = 'INSERT INTO medecin(first_name, last_name, email, login_password, num_phone, signature, id_adress) VALUES (?, ?, ?, ?, ?, "https://varices.ca/wp-content/uploads/2017/11/signature-dr-duclos.png", (SELECT id_adress from adress where nb_street=? and street_name=? and post_code = ?));'
+            db.query(sqlQueryMedecin, [prenom, nom, mail, mdp, num, num_rue, rue, code_postal], (err, result) => {
+                if (err) {
+                    console.log(err)
+                }
+                res.json({ message: "Medecin ajouté à la base de données avec succès !" })
+            })
+        }
+    })
+})
+
+//Inscription pharmacie
+app.post('/inscriptionPharmacie', (req, res) => {
+    let data_pharma = {
+        name_pharma: req.body.nom,
+        email: req.body.email,
+        login_password: req.body.mdp,
+        num_phone: req.body.numero
+    }
+    let data_adress = {
+        nb_street: req.body.nb_adresse,
+        street_name: req.body.adresse,
+        post_code: req.body.code_postale,
+        city: req.body.city
+    }
+
+    let sql_adress = "INSERT INTO adress (street_name, post_code, city, nb_street) VALUES (?, ?, ?, ?)";
+
+    db.query(sql_adress, [data_adress.street_name, data_adress.post_code, data_adress.city, data_adress.nb_street], (err, results) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send('Error inserting into adress database.');
+            return;
+        }
+
+        let sql_pharama = "INSERT INTO pharmacie (name_pharma, email, login_password, num_phone, id_adress) VALUES (?, ?, ?, ?, LAST_INSERT_ID())";
+
+        db.query(sql_pharama, [data_pharma.name_pharma, data_pharma.email, data_pharma.login_password, data_pharma.num_phone], (err, results) => {
+            if (err) {
+                if (err.sqlState === '45000') {
+                    res.status(500).send('Duplicated inserting into database.');
+                }
+                else if (err.sqlState !== '45000') {
+                    console.log(err);
+                    res.status(500).send('Error inserting into database.');
+                    return;
+                }
+            }
+
+
+            res.send('Data inserted successfully into pharmacie and adress databases.');
+        });
+    });
+});
+
+//Avoir la liste des médecins de la base de données pour l'inscription de l'étudiant
+app.get('/getMedecinIdName', (req, res) => {
+    let sql = 'SELECT id_medecin,first_name,last_name FROM medecin';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err);
+        }
+        res.json(results);
+    });
+});
+
+/*  -------------MEDECIN---------------  */
+
+app.post('/addPrescription', (req, res) => {
+    let data = {
+        pName: req.body.numSecu,
+        dosage: req.body.nbFoisParJour,
+        medical: 'Dolipane'
+    }
+
+    let sql = "INSERT INTO test_table (pName,medical,dosage) VALUES (?,?,?)";
+    db.query(sql, [data.pName, data.dosage, data.medical], (err, result) => {
+        if (err) throw err;
+        res.send('Prescription added...');
+    });
+});
+
+
+
+app.get('/getDrugs', (req, res) => {
+    let sql = 'SELECT * FROM drug';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log(err)
+        }
+        res.json(results);
+    });
+});
+
+app.post('/getPatient', (req, res) => {
+    numSecu = req.body.numSecu
+    let sqlQuery = "SELECT * from patients where id_patient = ?"
+    db.query(sqlQuery, [numSecu], (err, results) => {
+        if (err) {
+            console.log(err)
+            res.json({ message: "Une erreur s'est produite" })
+        }
+        else {
+            if (results === null || results.length === 0) {
+                res.status(400).json({ message: "Ce numéro de sécurité sociale n'existe pas !" });
+            } else {
+                res.json(results);
+            }
+        }
+    });
+});
+
+
 app.post("/addOrdonnance", (req, res) => {
     const { date, id_medecin, id_patient, infoMedicaments } = req.body;
     sqlQueryOrdo = "INSERT INTO ordonnance (date, id_medecin, id_patient) VALUES(CURDATE(), ?, ?);"
@@ -278,23 +295,7 @@ app.post("/getOrdonnances", (req, res) => {
     })
 })
 
-app.post("/getOrdonnancesPharma", (req, res) => {
-    const id_pharma = req.body.id_pharma
-    sqlGetOrdo = "SELECT ph.id_ordo_pharma, ph.id_pharma, ph.id_ordo, isComplete, o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour, a.street_name, a.city, a.post_code, a.nb_street from ordonnance_pharma ph join ordonnance o on ph.id_ordo=o.id_ordo join medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where ph.id_pharma= ?;"
-    db.query(sqlGetOrdo, [id_pharma], (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            if (result === null || result.length === 0) {
-                return res.json([])
-            }
-            else {
-                return res.json(result)
-            }
-        }
-    })
-})
+
 
 app.post("/getEtudiantsSuivi", (req, res) => {
     const id_medecin = req.body.id_medecin
@@ -314,97 +315,7 @@ app.post("/getEtudiantsSuivi", (req, res) => {
     })
 })
 
-
-
-//Patient side
-app.post("/sendOrdonnanceToPharma", (req, res) => {
-    const id_pharma = req.body.id_pharma;
-    const id_ordo = req.body.id_ordo;
-    sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
-    db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
-        if (err) {
-            if (err.sqlState === '45000') {
-                console.log("It's triggered!")
-                res.status(500).send('Duplicated inserting into ordonnance_pharma database.');
-            }
-            else if (err.sqlState !== '45000') {
-                console.log(err);
-                res.status(500).send('Error inserting into ordonnance_pharma database.');
-                return;
-            }
-        }
-        else {
-            console.log('Data inserted into ordonnance_pharma succeed.');
-            res.send('Data inserted into ordonnance_pharma succeed.');
-        }
-    });
-});
-
-app.get('/getPharmacies', (req, res) => {
-    let sql_getPharma = "SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie";
-    db.query(sql_getPharma, (err, result) => {
-        if (err) {
-            console.log(err);
-            console.log("Error in getPharmacies");
-            res.status(500).send("Error in getPharmacies")
-        } else {
-            res.json(result);
-        }
-    });
-});
-
-app.get('/getAddress', (req, res) => {
-    sql_getPharma = "SELECT * FROM adress WHERE id_adress = ?";
-    db.query(sql_getPharma, [req.query.id_adress], (err, result) => {
-        if (err) {
-            console.log(err);
-            res.status(500).send("Error in getAdress")
-        } else {
-            res.json(result);
-        }
-    });
-});
-
-app.post('/choseMedecinT', (req, res) => {
-
-})
-
-
-//Pharma side
-app.post("/getOrdonnancePharma", (req, res) => {
-    const id_pharma = req.body.id;
-    const role = req.body.role;
-    sql_getOrdo = "SELECT * FROM ordonnance_pharma WHERE id_pharma = ?"
-    db.query(sql_getOrdo, [id_pharma], (error, results) => {
-        if (error) {
-            console.log(error);
-            res.status(500).send("Error getting data from ordonnance_pharma database.");
-        } else {
-            res.json(results);
-        }
-    });
-});
-
-
-//Pharma side
-app.post("/completeOrdonnance", (req, res) => {
-    const id_ordo_pharma = req.body.id_ordo_pharma
-    sql_completeOrdo = "UPDATE ordonnance_pharma SET isComplete = 1 WHERE id_ordo_pharma = ? ;"
-    db.query(sql_completeOrdo, [id_ordo_pharma], (error, results) => {
-        if (error) {
-            console.log(error);
-            res.status(500).send("Error completing the ordonnance.");
-        } else {
-            res.send("Ordonnace complete")
-        }
-    });
-});
-
-
-app.listen(5001, () => {
-    console.log('Server started on port 5001');
-});
-
+//Envoi de mail au service d'absence
 app.post('/sendemails', async (req, res, next) => {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -430,6 +341,101 @@ app.post('/sendemails', async (req, res, next) => {
         return res.json({ status: 'success', message: 'Email sent successfully' });
     });
 });
+
+
+/*  -------------PATIENT---------------  */
+
+//Autoriser l'accès à la pharmacie
+app.post("/sendOrdonnanceToPharma", (req, res) => {
+    const id_pharma = req.body.id_pharma;
+    const id_ordo = req.body.id_ordo;
+    sql_ordoSending = "INSERT INTO ordonnance_pharma (id_pharma, id_ordo) VALUES (?, ?)"
+    db.query(sql_ordoSending, [id_pharma, id_ordo], (err, result) => {
+        if (err) {
+            if (err.sqlState === '45000') {
+                res.status(500).send('Duplicated inserting into ordonnance_pharma database.');
+            }
+            else if (err.sqlState !== '45000') {
+                console.log(err);
+                res.status(500).send('Error inserting into ordonnance_pharma database.');
+                return;
+            }
+        }
+        else {
+            console.log('Data inserted into ordonnance_pharma succeed.');
+            res.send('Data inserted into ordonnance_pharma succeed.');
+        }
+    });
+});
+
+app.get('/getPharmacies', (req, res) => {
+    let sql_getPharma = "SELECT id_pharma, name_pharma, email, num_phone, id_adress FROM pharmacie";
+    db.query(sql_getPharma, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send("Error in getPharmacies")
+        } else {
+            res.json(result);
+        }
+    });
+});
+
+app.get('/getAddress', (req, res) => {
+    sql_getPharma = "SELECT * FROM adress WHERE id_adress = ?";
+    db.query(sql_getPharma, [req.query.id_adress], (err, result) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send("Error in getAdress")
+        } else {
+            res.json(result);
+        }
+    });
+});
+
+/*  -------------PHARMACIE---------------  */
+
+//Avoir toutes les ordonnances accessibles
+app.post("/getOrdonnancesPharma", (req, res) => {
+    const id_pharma = req.body.id_pharma
+    sqlGetOrdo = "SELECT ph.id_ordo_pharma, ph.id_pharma, ph.id_ordo, isComplete, o.id_ordo, o.date, o.id_medecin,m.first_name as medecin_first_name, m.last_name as medecin_last_name, m.num_phone as medecin_num_phone, a.nb_street, a.street_name, a.post_code, a.city, o.id_patient, p.first_name, p.last_name, p.num_phone, od.id_drug, d.name_drug, od.nb_fois_par_jour, od.nb_jour, a.street_name, a.city, a.post_code, a.nb_street from ordonnance_pharma ph join ordonnance o on ph.id_ordo=o.id_ordo join medecin m on o.id_medecin = m.id_medecin  join patients p on o.id_patient = p.id_patient join adress a on m.id_adress = a.id_adress join ordonnance_drugs od on o.id_ordo=od.id_ordo join drug d on od.id_drug = d.id_drug where ph.id_pharma= ?;"
+    db.query(sqlGetOrdo, [id_pharma], (err, result) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            if (result === null || result.length === 0) {
+                return res.json([])
+            }
+            else {
+                return res.json(result)
+            }
+        }
+    })
+})
+
+//Traiter l'ordonnance
+app.post("/completeOrdonnance", (req, res) => {
+    const id_ordo_pharma = req.body.id_ordo_pharma
+    sql_completeOrdo = "UPDATE ordonnance_pharma SET isComplete = 1 WHERE id_ordo_pharma = ? ;"
+    db.query(sql_completeOrdo, [id_ordo_pharma], (error, results) => {
+        if (error) {
+            console.log(error);
+            res.status(500).send("Error completing the ordonnance.");
+        } else {
+            res.send("Ordonnace complete")
+        }
+    });
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//Choix du port
+app.listen(5001, () => {
+    console.log('Server started on port 5001');
+});
+
+
 
 
 
